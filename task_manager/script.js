@@ -13,7 +13,7 @@ function renderTasks() {
   tasks.forEach((task, idx) => {
     const li = document.createElement('li');
     li.className = 'task-item' + (task.done ? ' task-done' : '');
-    
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = task.done;
@@ -27,6 +27,14 @@ function renderTasks() {
     span.className = 'task-text';
     span.textContent = task.text;
 
+    // 日付表示
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'task-date';
+    dateSpan.style.marginLeft = '12px';
+    dateSpan.style.fontSize = '0.9em';
+    dateSpan.style.color = '#888';
+    dateSpan.textContent = task.date ? `(${task.date})` : '';
+
     const delBtn = document.createElement('button');
     delBtn.className = 'delete-btn';
     delBtn.textContent = '✕';
@@ -38,6 +46,7 @@ function renderTasks() {
 
     li.appendChild(checkbox);
     li.appendChild(span);
+    li.appendChild(dateSpan);
     li.appendChild(delBtn);
     taskList.appendChild(li);
   });
@@ -47,7 +56,10 @@ taskForm.addEventListener('submit', e => {
   e.preventDefault();
   const text = taskInput.value.trim();
   if (text) {
-    tasks.push({ text, done: false });
+    // 日付をYYYY-MM-DD形式で取得
+    const now = new Date();
+    const date = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    tasks.push({ text, done: false, date });
     saveTasks();
     renderTasks();
     taskInput.value = '';
