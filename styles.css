@@ -48,7 +48,8 @@
 }
 
 .beauty-filter-icon.panel-visible {
-  right: 280px;
+  /* Keep icon in fixed position - don't move when panel is visible */
+  right: 20px;
 }
 
 .filter-control {

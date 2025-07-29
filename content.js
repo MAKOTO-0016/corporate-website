@@ -41,6 +41,9 @@
 
   // Debounce function for performance optimization
   let saveTimeout = null;
+  
+  // Initialization flag to prevent multiple initializations
+  let isInitialized = false;
   function debouncedSave() {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(saveSettings, 300);
@@ -89,7 +92,6 @@
         // Update UI if it exists
         setTimeout(() => {
           updateUIFromSettings();
-          updateUIVisibility();
           applyFiltersToAllVideos();
         }, 100);
       } else {
@@ -102,7 +104,6 @@
         lastManualAdjustmentTime = 0;
         setTimeout(() => {
           updateUIFromSettings();
-          updateUIVisibility();
           applyFiltersToAllVideos();
         }, 100);
       }
@@ -307,13 +308,7 @@
     console.log('Filter container visibility:', filterContainer.style.display);
     console.log('Filter container classes:', filterContainer.className);
     
-    // Force visibility update after a short delay
-    setTimeout(() => {
-      if (isUIVisible) {
-        filterContainer.classList.remove('hidden');
-        console.log('Forced visibility update - removed hidden class');
-      }
-    }, 100);
+    // Initial visibility will be set by loadSettings, no need for forced update
   }
   
   // Helper function to create slider controls
@@ -685,6 +680,12 @@
   function ensureInitialization() {
     console.log('Ensuring initialization...');
     
+    // Prevent multiple initializations
+    if (isInitialized) {
+      console.log('Already initialized, skipping...');
+      return;
+    }
+    
     // Remove any existing elements first
     const existingIcon = document.querySelector('.beauty-filter-icon');
     const existingContainer = document.querySelector('.beauty-filter-container');
@@ -703,6 +704,7 @@
     
     // Initialize fresh
     initialize();
+    isInitialized = true;
   }
   
   if (document.readyState === 'loading') {
