@@ -464,21 +464,49 @@
       // Draw current video frame to canvas
       processingContext.drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
       
-      // Get image data and calculate average brightness
-      const imageData = processingContext.getImageData(0, 0, processingCanvas.width, processingCanvas.height);
-      const data = imageData.data;
+      // Get image data and calculate average brightness with error handling
       let totalBrightness = 0;
+      let pixelCount = 0;
       
-      for (let i = 0; i < data.length; i += 4) {
-        // Calculate luminance using standard formula
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        totalBrightness += brightness;
+      try {
+        const imageData = processingContext.getImageData(0, 0, processingCanvas.width, processingCanvas.height);
+        const data = imageData.data;
+        pixelCount = data.length / 4;
+        
+        for (let i = 0; i < data.length; i += 4) {
+          // Calculate luminance using standard formula
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const brightness = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+          totalBrightness += brightness;
+        }
+      } catch (error) {
+        // Fallback: Use canvas average color estimation
+        console.log('CORS error detected, using fallback brightness detection');
+        
+        // Create a smaller sampling canvas to avoid CORS issues
+        const sampleCanvas = document.createElement('canvas');
+        const sampleContext = sampleCanvas.getContext('2d');
+        sampleCanvas.width = 1;
+        sampleCanvas.height = 1;
+        
+        try {
+          // Draw scaled down version
+          sampleContext.drawImage(video, 0, 0, 1, 1);
+          const sampleData = sampleContext.getImageData(0, 0, 1, 1);
+          const pixel = sampleData.data;
+          totalBrightness = (0.299 * pixel[0] + 0.587 * pixel[1] + 0.114 * pixel[2]) / 255;
+          pixelCount = 1;
+        } catch (fallbackError) {
+          // If all methods fail, estimate based on video element properties
+          console.log('All brightness detection methods failed, using default estimation');
+          totalBrightness = 0.5; // Default medium brightness
+          pixelCount = 1;
+        }
       }
       
-      const avgBrightness = totalBrightness / (data.length / 4);
+      const avgBrightness = pixelCount > 0 ? totalBrightness / pixelCount : 0.5;
       
       // Adjust low-light compensation based on detected brightness
       if (avgBrightness < 0.3) {
