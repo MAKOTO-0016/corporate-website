@@ -76,19 +76,33 @@ document.getElementById('contactForm').addEventListener('submit', function(e) {
         return;
     }
     
-    // Simulate form submission
+    // Show loading state
     const submitButton = this.querySelector('button[type="submit"]');
     const originalText = submitButton.textContent;
-    
     submitButton.textContent = '送信中...';
     submitButton.disabled = true;
     
-    setTimeout(() => {
-        alert('お問い合わせありがとうございます。担当者より3営業日以内にご連絡いたします。');
+    // Submit form using fetch for better UX
+    fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString()
+    })
+    .then(() => {
+        // Success
+        alert('お問い合わせありがとうございます。担当者より連絡いたします。');
         this.reset();
+    })
+    .catch((error) => {
+        // Error fallback - still submit the form normally
+        console.log('Fetch failed, submitting normally:', error);
+        this.submit();
+    })
+    .finally(() => {
+        // Reset button state
         submitButton.textContent = originalText;
         submitButton.disabled = false;
-    }, 1500);
+    });
 });
 
 // Intersection Observer for animations
